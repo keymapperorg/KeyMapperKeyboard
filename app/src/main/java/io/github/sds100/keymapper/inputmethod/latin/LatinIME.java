@@ -33,6 +33,7 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
+import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
@@ -131,6 +132,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     static final String PERMISSION_HIDE_SOFT_INPUT =
             "io.github.sds100.keymapper.inputmethod.latin.HIDE_SOFT_INPUT";
 
+    //DON'T CHANGE THESE!!!
+    private static final String KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN_UP = "io.github.sds100.keymapper.inputmethod.ACTION_INPUT_DOWN_UP";
+    private static final String KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN = "io.github.sds100.keymapper.inputmethod.ACTION_INPUT_DOWN";
+    private static final String KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_UP = "io.github.sds100.keymapper.inputmethod.ACTION_INPUT_UP";
+    private static final String KEY_MAPPER_INPUT_METHOD_ACTION_TEXT = "io.github.sds100.keymapper.inputmethod.ACTION_INPUT_TEXT";
+
+    private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_KEYCODE = "io.github.sds100.keymapper.inputmethod.EXTRA_KEYCODE";
+    private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_METASTATE = "io.github.sds100.keymapper.inputmethod.EXTRA_METASTATE";
+    private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_TEXT = "io.github.sds100.keymapper.inputmethod.EXTRA_TEXT";
+
     /**
      * The name of the scheme used by the Package Manager to warn of a new package installation,
      * replacement or removal.
@@ -204,6 +215,91 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         }
     }
     final RestartAfterDeviceUnlockReceiver mRestartAfterDeviceUnlockReceiver = new RestartAfterDeviceUnlockReceiver();
+
+    final static class KeyMapperBroadcastReceiver extends BroadcastReceiver {
+        private final InputMethodService mIms;
+
+        public KeyMapperBroadcastReceiver(InputMethodService ims) {
+            mIms = ims;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            assert action != null;
+
+            switch (action) {
+                case LatinIME.KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN_UP: {
+                    int keyCode = getKeyCode(intent);
+                    if (keyCode == -1) return;
+
+                    long eventTime = SystemClock.uptimeMillis();
+
+                    KeyEvent downEvent = new KeyEvent(eventTime, eventTime,
+                            KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent));
+
+                    mIms.getCurrentInputConnection().sendKeyEvent(downEvent);
+
+                    KeyEvent upEvent = new KeyEvent(eventTime, SystemClock.uptimeMillis(),
+                            KeyEvent.ACTION_UP, keyCode, 0);
+
+                    mIms.getCurrentInputConnection().sendKeyEvent(upEvent);
+
+                    break;
+                }
+
+                case LatinIME.KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN: {
+                    Log.e(TAG, "onReceive: ondown");
+                    int keyCode = getKeyCode(intent);
+                    if (keyCode == -1) return;
+
+                    long eventTime = SystemClock.uptimeMillis();
+
+                    KeyEvent downEvent = new KeyEvent(eventTime, eventTime,
+                            KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent));
+
+                    mIms.getCurrentInputConnection().sendKeyEvent(downEvent);
+
+                    break;
+                }
+
+                case LatinIME.KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_UP: {
+                    Log.e(TAG, "onReceive: onup");
+                    int keyCode = getKeyCode(intent);
+                    if (keyCode == -1) return;
+
+                    long eventTime = SystemClock.uptimeMillis();
+
+                    KeyEvent upEvent = new KeyEvent(eventTime, SystemClock.uptimeMillis(),
+                            KeyEvent.ACTION_UP, keyCode, 0);
+
+                    mIms.getCurrentInputConnection().sendKeyEvent(upEvent);
+
+                    break;
+                }
+
+                case LatinIME.KEY_MAPPER_INPUT_METHOD_ACTION_TEXT: {
+                    String text = intent.getStringExtra(KEY_MAPPER_INPUT_METHOD_EXTRA_TEXT);
+
+                    if (text == null) return;
+
+                    mIms.getCurrentInputConnection().commitText(text, 1);
+                    break;
+                }
+            }
+        }
+
+        private int getKeyCode(Intent intent) {
+            return intent.getIntExtra(KEY_MAPPER_INPUT_METHOD_EXTRA_KEYCODE, -1);
+        }
+
+        private int getMetaState(Intent intent) {
+            return intent.getIntExtra(KEY_MAPPER_INPUT_METHOD_EXTRA_METASTATE, 0);
+        }
+    }
+
+    final KeyMapperBroadcastReceiver mKeyMapperBroadcastReceiver = new KeyMapperBroadcastReceiver(this);
 
     private AlertDialog mOptionsDialog;
 
@@ -661,6 +757,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         restartAfterUnlockFilter.addAction(Intent.ACTION_USER_UNLOCKED);
         registerReceiver(mRestartAfterDeviceUnlockReceiver, restartAfterUnlockFilter);
 
+        final IntentFilter keyMapperIntentFilter = new IntentFilter();
+        keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN_UP);
+        keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN);
+        keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_UP);
+        keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_TEXT);
+
+        registerReceiver(mKeyMapperBroadcastReceiver, keyMapperIntentFilter);
+
         StatsUtils.onCreate(mSettings.getCurrent(), mRichImm);
     }
 
@@ -771,6 +875,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mDictionaryPackInstallReceiver);
         unregisterReceiver(mDictionaryDumpBroadcastReceiver);
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
+        unregisterReceiver(mKeyMapperBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
         super.onDestroy();
     }
