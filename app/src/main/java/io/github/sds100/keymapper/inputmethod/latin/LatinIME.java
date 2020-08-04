@@ -47,6 +47,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 
 import io.github.sds100.keymapper.inputmethod.accessibility.AccessibilityUtils;
@@ -239,12 +240,18 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     KeyEvent downEvent = new KeyEvent(eventTime, eventTime,
                             KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent));
 
-                    mIms.getCurrentInputConnection().sendKeyEvent(downEvent);
+                    InputConnection ic = mIms.getCurrentInputConnection();
+
+                    if (ic != null) {
+                        ic.sendKeyEvent(downEvent);
+                    }
 
                     KeyEvent upEvent = new KeyEvent(eventTime, SystemClock.uptimeMillis(),
                             KeyEvent.ACTION_UP, keyCode, 0);
 
-                    mIms.getCurrentInputConnection().sendKeyEvent(upEvent);
+                    if (ic != null) {
+                        ic.sendKeyEvent(upEvent);
+                    }
 
                     break;
                 }
@@ -258,7 +265,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     KeyEvent downEvent = new KeyEvent(eventTime, eventTime,
                             KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent));
 
-                    mIms.getCurrentInputConnection().sendKeyEvent(downEvent);
+                    InputConnection ic = mIms.getCurrentInputConnection();
+
+                    if (ic != null) {
+                        ic.sendKeyEvent(downEvent);
+                    }
 
                     break;
                 }
@@ -272,7 +283,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     KeyEvent upEvent = new KeyEvent(eventTime, SystemClock.uptimeMillis(),
                             KeyEvent.ACTION_UP, keyCode, 0);
 
-                    mIms.getCurrentInputConnection().sendKeyEvent(upEvent);
+                    InputConnection ic = mIms.getCurrentInputConnection();
+
+                    if (ic != null) {
+                        ic.sendKeyEvent(upEvent);
+                    }
 
                     break;
                 }
@@ -282,7 +297,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
                     if (text == null) return;
 
-                    mIms.getCurrentInputConnection().commitText(text, 1);
+                    InputConnection ic = mIms.getCurrentInputConnection();
+
+                    if (ic != null) {
+                        ic.commitText(text, 1);
+                    }
+
                     break;
                 }
             }
