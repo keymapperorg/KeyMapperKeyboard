@@ -1,1 +1,7 @@
-Key Mapper GUI Keyboard is a fork of OpenBoard, which is a 100% foss keyboard based on AOSP, with no dependency on Google binaries, that respects your privacy.
+This app is only compatible with Key Mapper 2.1.0 or newer
+
+Key Mapper GUI Keyboard is a fork of OpenBoard, which is a 100% foss keyboard based on AOSP.
+
+This is the official keyboard for Key Mapper that has a GUI (Graphical User Interface). i.e on-screen buttons!
+
+The one built-in to Key Mapper is called the "Basic Input Method", which does NOT have a GUI.
