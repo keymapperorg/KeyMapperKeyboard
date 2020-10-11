@@ -142,6 +142,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_KEYCODE = "io.github.sds100.keymapper.inputmethod.EXTRA_KEYCODE";
     private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_METASTATE = "io.github.sds100.keymapper.inputmethod.EXTRA_METASTATE";
     private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_TEXT = "io.github.sds100.keymapper.inputmethod.EXTRA_TEXT";
+    private static final String KEY_MAPPER_INPUT_METHOD_EXTRA_DEVICE_ID = "io.github.sds100.keymapper.inputmethod.EXTRA_DEVICE_ID";
 
     /**
      * The name of the scheme used by the Package Manager to warn of a new package installation,
@@ -238,7 +239,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     long eventTime = SystemClock.uptimeMillis();
 
                     KeyEvent downEvent = new KeyEvent(eventTime, eventTime,
-                            KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent));
+                            KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent), getDeviceId(intent), 0);
 
                     InputConnection ic = mIms.getCurrentInputConnection();
 
@@ -247,7 +248,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     }
 
                     KeyEvent upEvent = new KeyEvent(eventTime, SystemClock.uptimeMillis(),
-                            KeyEvent.ACTION_UP, keyCode, 0);
+                            KeyEvent.ACTION_UP, keyCode, 0, getMetaState(intent), getDeviceId(intent), 0);
 
                     if (ic != null) {
                         ic.sendKeyEvent(upEvent);
@@ -263,7 +264,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     long eventTime = SystemClock.uptimeMillis();
 
                     KeyEvent downEvent = new KeyEvent(eventTime, eventTime,
-                            KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent));
+                            KeyEvent.ACTION_DOWN, keyCode, 0, getMetaState(intent), getDeviceId(intent), 0);
 
                     InputConnection ic = mIms.getCurrentInputConnection();
 
@@ -281,7 +282,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     long eventTime = SystemClock.uptimeMillis();
 
                     KeyEvent upEvent = new KeyEvent(eventTime, SystemClock.uptimeMillis(),
-                            KeyEvent.ACTION_UP, keyCode, 0);
+                            KeyEvent.ACTION_UP, keyCode, 0, getMetaState(intent), getDeviceId(intent), 0);
 
                     InputConnection ic = mIms.getCurrentInputConnection();
 
@@ -314,6 +315,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
         private int getMetaState(Intent intent) {
             return intent.getIntExtra(KEY_MAPPER_INPUT_METHOD_EXTRA_METASTATE, 0);
+        }
+
+        private int getDeviceId(Intent intent){
+            return intent.getIntExtra(KEY_MAPPER_INPUT_METHOD_EXTRA_DEVICE_ID, 0);
         }
     }
 
