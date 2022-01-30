@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<org.dslul.openboard.inputmethod.keyboard.clipboard.ClipboardHistoryView
+<io.github.sds100.keymapper.inputmethod.keyboard.clipboard.ClipboardHistoryView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +18,7 @@
                 android:layout_gravity="center"
                 android:text="¯\\_(ツ)_/¯"/>
 
-        <org.dslul.openboard.inputmethod.keyboard.clipboard.ClipboardHistoryRecyclerView
+        <io.github.sds100.keymapper.inputmethod.keyboard.clipboard.ClipboardHistoryRecyclerView
                 android:id="@+id/clipboard_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -61,4 +61,4 @@
 
     </FrameLayout>
 
-</org.dslul.openboard.inputmethod.keyboard.clipboard.ClipboardHistoryView>
+</io.github.sds100.keymapper.inputmethod.keyboard.clipboard.ClipboardHistoryView>

@@ -18,7 +18,7 @@
 */
 -->
 
-<org.dslul.openboard.inputmethod.latin.InputView
+<io.github.sds100.keymapper.inputmethod.latin.InputView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -32,4 +32,4 @@
     <include
         android:id="@+id/clipboard_history_view"
         layout="@layout/clipboard_history_view" />
-</org.dslul.openboard.inputmethod.latin.InputView>
+</io.github.sds100.keymapper.inputmethod.latin.InputView>

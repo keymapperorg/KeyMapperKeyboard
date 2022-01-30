@@ -18,7 +18,7 @@
 */
 -->
 
-<org.dslul.openboard.inputmethod.keyboard.emoji.EmojiPalettesView
+<io.github.sds100.keymapper.inputmethod.keyboard.emoji.EmojiPalettesView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
         android:layout_height="@dimen/config_suggestions_strip_height"
         style="?attr/suggestionStripViewStyle"
     >
-        <org.dslul.openboard.inputmethod.compat.TabHostCompat
+        <io.github.sds100.keymapper.inputmethod.compat.TabHostCompat
             android:id="@+id/emoji_category_tabhost"
             android:layout_width="0dip"
             android:layout_weight="87.5"
@@ -57,14 +57,14 @@
                     android:layout_height="0dip"
                     android:visibility="gone" />
             </FrameLayout>
-        </org.dslul.openboard.inputmethod.compat.TabHostCompat>
+        </io.github.sds100.keymapper.inputmethod.compat.TabHostCompat>
     </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/emoji_keyboard_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" />
-    <org.dslul.openboard.inputmethod.keyboard.emoji.EmojiCategoryPageIndicatorView
+    <io.github.sds100.keymapper.inputmethod.keyboard.emoji.EmojiCategoryPageIndicatorView
         android:id="@+id/emoji_category_page_id_view"
         android:layout_width="match_parent"
         android:layout_height="2dip" />
@@ -128,4 +128,4 @@
             android:soundEffectsEnabled="false"
             android:contentDescription="@string/spoken_description_delete" />
     </LinearLayout>
-</org.dslul.openboard.inputmethod.keyboard.emoji.EmojiPalettesView>
+</io.github.sds100.keymapper.inputmethod.keyboard.emoji.EmojiPalettesView>
