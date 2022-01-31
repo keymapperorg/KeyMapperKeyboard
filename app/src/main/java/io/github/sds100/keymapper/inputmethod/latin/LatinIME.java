@@ -16,13 +16,19 @@
 
 package io.github.sds100.keymapper.inputmethod.latin;
 
+import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.FORCE_ASCII;
+import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE;
+import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE_COMPAT;
+
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -33,7 +39,7 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
-import android.os.SystemClock;
+import android.os.RemoteException;
 import android.text.InputType;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
@@ -50,6 +56,16 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+
+import io.github.sds100.keymapper.api.IKeyEventReceiver;
 import io.github.sds100.keymapper.inputmethod.accessibility.AccessibilityUtils;
 import io.github.sds100.keymapper.inputmethod.annotations.UsedForTesting;
 import io.github.sds100.keymapper.inputmethod.compat.EditorInfoCompatUtils;
@@ -91,19 +107,6 @@ import io.github.sds100.keymapper.inputmethod.latin.utils.StatsUtils;
 import io.github.sds100.keymapper.inputmethod.latin.utils.StatsUtilsManager;
 import io.github.sds100.keymapper.inputmethod.latin.utils.SubtypeLocaleUtils;
 import io.github.sds100.keymapper.inputmethod.latin.utils.ViewLayoutUtils;
-
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-
-import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.FORCE_ASCII;
-import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE;
-import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE_COMPAT;
 
 /**
  * Input method implementation for Qwerty'ish keyboard.
@@ -214,7 +217,27 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
         }
     }
+
     final RestartAfterDeviceUnlockReceiver mRestartAfterDeviceUnlockReceiver = new RestartAfterDeviceUnlockReceiver();
+
+    private final Object keyEventReceiverLock = new Object();
+    private IKeyEventReceiver keyEventReceiverBinder = null;
+
+    private final ServiceConnection keyEventReceiverConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            synchronized (keyEventReceiverLock) {
+                keyEventReceiverBinder = IKeyEventReceiver.Stub.asInterface(service);
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            synchronized (keyEventReceiverLock) {
+                keyEventReceiverBinder = null;
+            }
+        }
+    };
 
     final static class KeyMapperBroadcastReceiver extends BroadcastReceiver {
         private final InputMethodService mIms;
@@ -759,6 +782,15 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
         registerReceiver(mKeyMapperBroadcastReceiver, keyMapperIntentFilter);
 
+        try {
+            ComponentName keyEventReceiverComponent = new ComponentName("io.github.sds100.keymapper", "io.github.sds100.keymapper.api.KeyEventReceiver");
+            Intent keyEventReceiverServiceIntent = new Intent();
+            keyEventReceiverServiceIntent.setComponent(keyEventReceiverComponent);
+            bindService(keyEventReceiverServiceIntent, keyEventReceiverConnection, 0);
+        } catch (SecurityException e) {
+            Log.e(TAG, e.toString());
+        }
+
         StatsUtils.onCreate(mSettings.getCurrent(), mRichImm);
     }
 
@@ -871,6 +903,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
         unregisterReceiver(mKeyMapperBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
+        unbindService(keyEventReceiverConnection);
         super.onDestroy();
     }
 
@@ -1889,6 +1922,17 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     // Hooks for hardware keyboard
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
+
+        if (keyEventReceiverBinder != null) {
+            try {
+                if (keyEventReceiverBinder.onKeyEvent(keyEvent)) {
+                    return true;
+                }
+            } catch (RemoteException e) {
+
+            }
+        }
+
         if (mEmojiAltPhysicalKeyDetector == null) {
             mEmojiAltPhysicalKeyDetector = new EmojiAltPhysicalKeyDetector(
                     getApplicationContext().getResources());
@@ -1909,11 +1953,22 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     mHandler);
             return true;
         }
+
         return super.onKeyDown(keyCode, keyEvent);
     }
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
+        if (keyEventReceiverBinder != null) {
+            try {
+                if (keyEventReceiverBinder.onKeyEvent(keyEvent)) {
+                    return true;
+                }
+            } catch (RemoteException e) {
+
+            }
+        }
+
         if (mEmojiAltPhysicalKeyDetector == null) {
             mEmojiAltPhysicalKeyDetector = new EmojiAltPhysicalKeyDetector(
                     getApplicationContext().getResources());
@@ -1926,6 +1981,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         if (mInputLogic.mCurrentlyPressedHardwareKeys.remove(keyIdentifier)) {
             return true;
         }
+
         return super.onKeyUp(keyCode, keyEvent);
     }
 
