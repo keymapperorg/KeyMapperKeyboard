@@ -220,21 +220,21 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     final RestartAfterDeviceUnlockReceiver mRestartAfterDeviceUnlockReceiver = new RestartAfterDeviceUnlockReceiver();
 
-    private final Object keyEventReceiverLock = new Object();
-    private IKeyEventReceiver keyEventReceiverBinder = null;
+    private final Object mKeyEventReceiverLock = new Object();
+    private IKeyEventReceiver mKeyEventReceiverBinder = null;
 
-    private final ServiceConnection keyEventReceiverConnection = new ServiceConnection() {
+    private final ServiceConnection mKeyEventReceiverConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            synchronized (keyEventReceiverLock) {
-                keyEventReceiverBinder = IKeyEventReceiver.Stub.asInterface(service);
+            synchronized (mKeyEventReceiverLock) {
+                mKeyEventReceiverBinder = IKeyEventReceiver.Stub.asInterface(service);
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            synchronized (keyEventReceiverLock) {
-                keyEventReceiverBinder = null;
+            synchronized (mKeyEventReceiverLock) {
+                mKeyEventReceiverBinder = null;
             }
         }
     };
@@ -786,7 +786,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             ComponentName keyEventReceiverComponent = new ComponentName("io.github.sds100.keymapper", "io.github.sds100.keymapper.api.KeyEventReceiver");
             Intent keyEventReceiverServiceIntent = new Intent();
             keyEventReceiverServiceIntent.setComponent(keyEventReceiverComponent);
-            bindService(keyEventReceiverServiceIntent, keyEventReceiverConnection, 0);
+            bindService(keyEventReceiverServiceIntent, mKeyEventReceiverConnection, 0);
         } catch (SecurityException e) {
             Log.e(TAG, e.toString());
         }
@@ -903,7 +903,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
         unregisterReceiver(mKeyMapperBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
-        unbindService(keyEventReceiverConnection);
+        unbindService(mKeyEventReceiverConnection);
         super.onDestroy();
     }
 
@@ -1923,9 +1923,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 
-        if (keyEventReceiverBinder != null) {
+        if (mKeyEventReceiverBinder != null) {
             try {
-                if (keyEventReceiverBinder.onKeyEvent(keyEvent)) {
+                if (mKeyEventReceiverBinder.onKeyEvent(keyEvent)) {
                     return true;
                 }
             } catch (RemoteException e) {
@@ -1959,9 +1959,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
-        if (keyEventReceiverBinder != null) {
+        if (mKeyEventReceiverBinder != null) {
             try {
-                if (keyEventReceiverBinder.onKeyEvent(keyEvent)) {
+                if (mKeyEventReceiverBinder.onKeyEvent(keyEvent)) {
                     return true;
                 }
             } catch (RemoteException e) {
