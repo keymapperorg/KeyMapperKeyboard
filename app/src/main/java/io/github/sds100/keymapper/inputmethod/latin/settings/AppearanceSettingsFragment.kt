@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dslul.openboard.inputmethod.latin.settings
+package io.github.sds100.keymapper.inputmethod.latin.settings
 
 import android.os.Build
 import android.os.Bundle
 import android.preference.ListPreference
 import android.preference.Preference
 import android.preference.TwoStatePreference
-import org.dslul.openboard.inputmethod.keyboard.KeyboardTheme
-import org.dslul.openboard.inputmethod.latin.R
-import org.dslul.openboard.inputmethod.latin.common.Constants
-import org.dslul.openboard.inputmethod.latin.define.ProductionFlags
+import io.github.sds100.keymapper.inputmethod.keyboard.KeyboardTheme
+import io.github.sds100.keymapper.inputmethod.latin.R
+import io.github.sds100.keymapper.inputmethod.latin.common.Constants
+import io.github.sds100.keymapper.inputmethod.latin.define.ProductionFlags
 import java.util.*
 
 /**

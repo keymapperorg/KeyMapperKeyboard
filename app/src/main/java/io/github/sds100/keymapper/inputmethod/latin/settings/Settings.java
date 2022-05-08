@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dslul.openboard.inputmethod.latin.settings;
+package io.github.sds100.keymapper.inputmethod.latin.settings;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -26,16 +26,16 @@ import android.os.Build;
 import android.util.Log;
 
 import android.view.Gravity;
-import org.dslul.openboard.inputmethod.latin.AudioAndHapticFeedbackManager;
-import org.dslul.openboard.inputmethod.latin.InputAttributes;
-import org.dslul.openboard.inputmethod.latin.R;
-import org.dslul.openboard.inputmethod.latin.common.StringUtils;
-import org.dslul.openboard.inputmethod.latin.utils.AdditionalSubtypeUtils;
-import org.dslul.openboard.inputmethod.latin.utils.DeviceProtectedUtils;
-import org.dslul.openboard.inputmethod.latin.utils.JniUtils;
-import org.dslul.openboard.inputmethod.latin.utils.ResourceUtils;
-import org.dslul.openboard.inputmethod.latin.utils.RunInLocale;
-import org.dslul.openboard.inputmethod.latin.utils.StatsUtils;
+import io.github.sds100.keymapper.inputmethod.latin.AudioAndHapticFeedbackManager;
+import io.github.sds100.keymapper.inputmethod.latin.InputAttributes;
+import io.github.sds100.keymapper.inputmethod.latin.R;
+import io.github.sds100.keymapper.inputmethod.latin.common.StringUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.AdditionalSubtypeUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.DeviceProtectedUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.JniUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.ResourceUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.RunInLocale;
+import io.github.sds100.keymapper.inputmethod.latin.utils.StatsUtils;
 
 import java.util.Collections;
 import java.util.Locale;

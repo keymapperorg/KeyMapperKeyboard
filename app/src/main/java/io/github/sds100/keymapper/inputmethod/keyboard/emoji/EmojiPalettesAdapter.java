@@ -29,7 +29,7 @@ import io.github.sds100.keymapper.inputmethod.latin.R;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.dslul.openboard.inputmethod.latin.settings.Settings;
+import io.github.sds100.keymapper.inputmethod.latin.settings.Settings;
 
 final class EmojiPalettesAdapter extends RecyclerView.Adapter<EmojiPalettesAdapter.ViewHolder>{
     private static final String TAG = EmojiPalettesAdapter.class.getSimpleName();

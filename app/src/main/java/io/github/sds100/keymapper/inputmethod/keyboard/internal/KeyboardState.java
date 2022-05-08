@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.dslul.openboard.inputmethod.keyboard.internal;
+package io.github.sds100.keymapper.inputmethod.keyboard.internal;
 
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.dslul.openboard.inputmethod.event.Event;
-import org.dslul.openboard.inputmethod.latin.common.Constants;
-import org.dslul.openboard.inputmethod.latin.settings.Settings;
-import org.dslul.openboard.inputmethod.latin.utils.CapsModeUtils;
-import org.dslul.openboard.inputmethod.latin.utils.RecapitalizeStatus;
+import io.github.sds100.keymapper.inputmethod.event.Event;
+import io.github.sds100.keymapper.inputmethod.latin.common.Constants;
+import io.github.sds100.keymapper.inputmethod.latin.settings.Settings;
+import io.github.sds100.keymapper.inputmethod.latin.utils.CapsModeUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.RecapitalizeStatus;
 
 /**
  * Keyboard state machine.

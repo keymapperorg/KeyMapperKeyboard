@@ -1,12 +1,12 @@
-package org.dslul.openboard.inputmethod.latin
+package io.github.sds100.keymapper.inputmethod.latin
 
 import android.content.ClipboardManager
 import android.content.Context
 import android.text.TextUtils
 import android.util.Base64
 import android.util.Log
-import org.dslul.openboard.inputmethod.compat.ClipboardManagerCompat
-import org.dslul.openboard.inputmethod.latin.utils.JsonUtils
+import io.github.sds100.keymapper.inputmethod.compat.ClipboardManagerCompat
+import io.github.sds100.keymapper.inputmethod.latin.utils.JsonUtils
 import java.io.File
 import java.lang.Exception
 import java.util.*

@@ -26,7 +26,7 @@
         android:summary="@string/prefs_force_incognito_mode_summary"
         android:defaultValue="false" />
 
-    <org.dslul.openboard.inputmethod.latin.settings.SeekBarDialogPreference
+    <io.github.sds100.keymapper.inputmethod.latin.settings.SeekBarDialogPreference
         android:key="pref_key_longpress_timeout"
         android:title="@string/prefs_key_longpress_timeout_settings"
         latin:minValue="@integer/config_min_longpress_timeout"
@@ -55,7 +55,7 @@
         android:persistent="true" />
 
     <PreferenceScreen
-            android:fragment="org.dslul.openboard.inputmethod.latin.settings.DebugSettingsFragment"
+            android:fragment="io.github.sds100.keymapper.inputmethod.latin.settings.DebugSettingsFragment"
             android:key="screen_debug"
             android:title="Debug settings"
             android:defaultValue="false"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dslul.openboard.inputmethod.keyboard;
+package io.github.sds100.keymapper.inputmethod.keyboard;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -25,26 +25,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
-import org.dslul.openboard.inputmethod.event.Event;
-import org.dslul.openboard.inputmethod.keyboard.KeyboardLayoutSet.KeyboardLayoutSetException;
-import org.dslul.openboard.inputmethod.keyboard.clipboard.ClipboardHistoryView;
-import org.dslul.openboard.inputmethod.keyboard.emoji.EmojiPalettesView;
-import org.dslul.openboard.inputmethod.keyboard.internal.KeyboardState;
-import org.dslul.openboard.inputmethod.keyboard.internal.KeyboardTextsSet;
-import org.dslul.openboard.inputmethod.latin.InputView;
-import org.dslul.openboard.inputmethod.latin.KeyboardWrapperView;
-import org.dslul.openboard.inputmethod.latin.LatinIME;
-import org.dslul.openboard.inputmethod.latin.R;
-import org.dslul.openboard.inputmethod.latin.RichInputMethodManager;
-import org.dslul.openboard.inputmethod.latin.WordComposer;
-import org.dslul.openboard.inputmethod.latin.define.ProductionFlags;
-import org.dslul.openboard.inputmethod.latin.settings.Settings;
-import org.dslul.openboard.inputmethod.latin.settings.SettingsValues;
-import org.dslul.openboard.inputmethod.latin.utils.CapsModeUtils;
-import org.dslul.openboard.inputmethod.latin.utils.LanguageOnSpacebarUtils;
-import org.dslul.openboard.inputmethod.latin.utils.RecapitalizeStatus;
-import org.dslul.openboard.inputmethod.latin.utils.ResourceUtils;
-import org.dslul.openboard.inputmethod.latin.utils.ScriptUtils;
+import io.github.sds100.keymapper.inputmethod.event.Event;
+import io.github.sds100.keymapper.inputmethod.keyboard.KeyboardLayoutSet.KeyboardLayoutSetException;
+import io.github.sds100.keymapper.inputmethod.keyboard.clipboard.ClipboardHistoryView;
+import io.github.sds100.keymapper.inputmethod.keyboard.emoji.EmojiPalettesView;
+import io.github.sds100.keymapper.inputmethod.keyboard.internal.KeyboardState;
+import io.github.sds100.keymapper.inputmethod.keyboard.internal.KeyboardTextsSet;
+import io.github.sds100.keymapper.inputmethod.latin.InputView;
+import io.github.sds100.keymapper.inputmethod.latin.KeyboardWrapperView;
+import io.github.sds100.keymapper.inputmethod.latin.LatinIME;
+import io.github.sds100.keymapper.inputmethod.latin.R;
+import io.github.sds100.keymapper.inputmethod.latin.RichInputMethodManager;
+import io.github.sds100.keymapper.inputmethod.latin.WordComposer;
+import io.github.sds100.keymapper.inputmethod.latin.define.ProductionFlags;
+import io.github.sds100.keymapper.inputmethod.latin.settings.Settings;
+import io.github.sds100.keymapper.inputmethod.latin.settings.SettingsValues;
+import io.github.sds100.keymapper.inputmethod.latin.utils.CapsModeUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.LanguageOnSpacebarUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.RecapitalizeStatus;
+import io.github.sds100.keymapper.inputmethod.latin.utils.ResourceUtils;
+import io.github.sds100.keymapper.inputmethod.latin.utils.ScriptUtils;
 
 import javax.annotation.Nonnull;
 

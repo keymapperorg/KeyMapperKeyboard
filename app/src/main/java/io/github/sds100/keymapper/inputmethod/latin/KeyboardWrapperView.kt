@@ -1,4 +1,4 @@
-package org.dslul.openboard.inputmethod.latin
+package io.github.sds100.keymapper.inputmethod.latin
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,8 +7,8 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
-import org.dslul.openboard.inputmethod.keyboard.KeyboardActionListener
-import org.dslul.openboard.inputmethod.latin.common.Constants
+import io.github.sds100.keymapper.inputmethod.keyboard.KeyboardActionListener
+import io.github.sds100.keymapper.inputmethod.latin.common.Constants
 
 class KeyboardWrapperView @JvmOverloads constructor(
         context: Context,

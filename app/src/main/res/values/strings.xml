@@ -25,7 +25,7 @@
     <string name="spell_checker_service_name">Key Mapper GUI Keyboard Spell Checker</string>
     <!-- Title for Android Keyboard settings screen. AOSP(Android Open Source Project) should not be translated.
          This resource should be copied from msgid="423615877174850267" -->
-    <string name="english_ime_settings">Key Mapper GUI Keyboard Settings</string>
+    <string name="ime_settings">Key Mapper GUI Keyboard Settings</string>
     <!-- Title for the spell checking service settings screen. AOSP(Android Open Source Project) should not be translated.
          This resource should be copied from msgid="2970535894327288421" -->
     <string name="android_spell_checker_settings">Key Mapper GUI Keyboard Spell Checker Settings</string>
