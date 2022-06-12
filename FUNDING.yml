@@ -1,0 +1,11 @@
+# These are supported funding model platforms
+github: # [sds100] sds100 is not a GitHub sponsor yet.
+patreon: # Replace with a single Patreon username
+open_collective: # Replace with a single Open Collective username
+ko_fi: sethschroeder
+tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
+community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
+liberapay: sds100
+issuehunt: # Replace with a single IssueHunt username
+otechie: # Replace with a single Otechie username
+custom: ['https://buy.stripe.com/00g16L9YEabldDWdQQ']
