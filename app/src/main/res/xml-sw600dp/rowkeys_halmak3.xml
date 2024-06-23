@@ -19,11 +19,22 @@
 -->
 
 <merge
-    xmlns:latin="http://schemas.android.com/apk/res-auto">
-    <!-- a,z,e,r,t -->
-    <include
-        latin:keyboardLayout="@xml/rowkeys_azerty1_left5" />
-    <!-- y,u,i,o,p -->
-    <include
-        latin:keyboardLayout="@xml/rowkeys_azerty1_right5" />
+    xmlns:latin="http://schemas.android.com/apk/res-auto"
+>
+    <Key
+        latin:keySpec="m"/>
+    <Key
+        latin:keySpec="v"/>
+    <Key
+        latin:keySpec="c"/>
+    <Key
+        latin:keySpec="/" />
+    <Key
+        latin:keySpec="g" />
+    <Key
+        latin:keySpec="p" />
+    <Key
+        latin:keySpec="x"/>
+    <Key
+        latin:keySpec="k"/>
 </merge>

@@ -2,7 +2,7 @@
 <!--
 /*
 **
-** Copyright 2013, The Android Open Source Project
+** Copyright 2012, The Android Open Source Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,30 +21,26 @@
 <merge
     xmlns:latin="http://schemas.android.com/apk/res-auto"
 >
+    <Key
+        latin:keySpec="b"
+        latin:keyHintLabel=";"
+        latin:additionalMoreKeys=";" />
+    <Key
+        latin:keySpec="n"
+        latin:keyHintLabel="!"
+        latin:additionalMoreKeys="!"
+        latin:moreKeys="!text/morekeys_n" />
     <switch>
         <case
-            latin:keyboardLayoutSet="dvorak"
+            latin:keyboardLayoutSetElement="alphabetManualShifted|alphabetShiftLockShifted"
         >
             <Key
-                latin:keySpec="z"
-                latin:keyLabelFlags="hasPopupHint"
-                latin:moreKeys="!text/morekeys_punctuation,!text/morekeys_z" />
-        </case>
-        <case
-            latin:keyboardLayoutSet="halmak" 
-        >
-            <Key
-                latin:keySpec="."
-                latin:backgroundType="normal"
-                latin:moreKeys="!text/morekeys_period" />
+                latin:keySpec="\?" />
         </case>
         <default>
             <Key
-                latin:keySpec="!text/keyspec_period"
-                latin:keyHintLabel="!text/keyhintlabel_period"
-                latin:keyLabelFlags="hasPopupHint|hasShiftedLetterHint"
-                latin:moreKeys="!text/morekeys_period"
-                latin:backgroundType="functional" />
+                latin:keySpec="\'"
+                latin:moreKeys="!text/morekeys_single_quote" />
         </default>
     </switch>
 </merge>
