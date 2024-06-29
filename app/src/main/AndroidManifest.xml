@@ -22,9 +22,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
-    <uses-permission android:name="io.github.sds100.keymapper.KEY_EVENT_RECEIVER" />
+    <uses-permission android:name="io.github.sds100.keymapper.KEY_EVENT_RELAY_SERVICE" />
 
-    <!-- A signature-protected permission to ask AOSP Keyboard to close the software keyboard.
+    <!-- A signature-protected permission to ask AOSP Keyboar   d to close the software keyboard.
          To use this, add the following line into calling application's AndroidManifest.xml
          <pre>
          {@code
