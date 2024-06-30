@@ -16,19 +16,13 @@
 
 package io.github.sds100.keymapper.inputmethod.latin;
 
-import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.FORCE_ASCII;
-import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE;
-import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE_COMPAT;
-
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -39,7 +33,6 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
-import android.os.RemoteException;
 import android.text.InputType;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
@@ -65,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-import io.github.sds100.keymapper.api.IKeyEventReceiver;
+import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback;
 import io.github.sds100.keymapper.inputmethod.accessibility.AccessibilityUtils;
 import io.github.sds100.keymapper.inputmethod.annotations.UsedForTesting;
 import io.github.sds100.keymapper.inputmethod.compat.EditorInfoCompatUtils;
@@ -107,6 +100,10 @@ import io.github.sds100.keymapper.inputmethod.latin.utils.StatsUtils;
 import io.github.sds100.keymapper.inputmethod.latin.utils.StatsUtilsManager;
 import io.github.sds100.keymapper.inputmethod.latin.utils.SubtypeLocaleUtils;
 import io.github.sds100.keymapper.inputmethod.latin.utils.ViewLayoutUtils;
+
+import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.FORCE_ASCII;
+import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE;
+import static io.github.sds100.keymapper.inputmethod.latin.common.Constants.ImeOption.NO_MICROPHONE_COMPAT;
 
 /**
  * Input method implementation for Qwerty'ish keyboard.
@@ -167,7 +164,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     private SuggestionStripView mSuggestionStripView;
 
     private RichInputMethodManager mRichImm;
-    @UsedForTesting final KeyboardSwitcher mKeyboardSwitcher;
+    @UsedForTesting
+    final KeyboardSwitcher mKeyboardSwitcher;
     private final SubtypeState mSubtypeState = new SubtypeState();
     private EmojiAltPhysicalKeyDetector mEmojiAltPhysicalKeyDetector;
     private StatsUtilsManager mStatsUtilsManager;
@@ -199,6 +197,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
         }
     }
+
     final HideSoftInputReceiver mHideSoftInputReceiver = new HideSoftInputReceiver(this);
 
     final static class RestartAfterDeviceUnlockReceiver extends BroadcastReceiver {
@@ -220,22 +219,19 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     final RestartAfterDeviceUnlockReceiver mRestartAfterDeviceUnlockReceiver = new RestartAfterDeviceUnlockReceiver();
 
-    private final Object mKeyEventReceiverLock = new Object();
-    private IKeyEventReceiver mKeyEventReceiverBinder = null;
-
-    private final ServiceConnection mKeyEventReceiverConnection = new ServiceConnection() {
+    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperRelease;
+    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperDebug;
+    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperCi;
+    private IKeyEventRelayServiceCallback mKeyEventRelayServiceCallback = new IKeyEventRelayServiceCallback.Stub() {
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            synchronized (mKeyEventReceiverLock) {
-                mKeyEventReceiverBinder = IKeyEventReceiver.Stub.asInterface(service);
-            }
-        }
+        public boolean onKeyEvent(KeyEvent event, String sourcePackageName) {
+            InputConnection ic = getCurrentInputConnection();
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            synchronized (mKeyEventReceiverLock) {
-                mKeyEventReceiverBinder = null;
+            if (ic == null) {
+                return false;
             }
+
+            return ic.sendKeyEvent(event);
         }
     };
 
@@ -438,7 +434,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     latinIme.deallocateMemory();
                     break;
                 case MSG_SWITCH_LANGUAGE_AUTOMATICALLY:
-                    latinIme.switchLanguage((InputMethodSubtype)msg.obj);
+                    latinIme.switchLanguage((InputMethodSubtype) msg.obj);
                     break;
                 case MSG_UPDATE_CLIPBOARD_PINNED_CLIPS:
                     @SuppressWarnings("unchecked")
@@ -782,14 +778,27 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
         registerReceiver(mKeyMapperBroadcastReceiver, keyMapperIntentFilter);
 
-        try {
-            ComponentName keyEventReceiverComponent = new ComponentName("io.github.sds100.keymapper", "io.github.sds100.keymapper.api.KeyEventReceiver");
-            Intent keyEventReceiverServiceIntent = new Intent();
-            keyEventReceiverServiceIntent.setComponent(keyEventReceiverComponent);
-            bindService(keyEventReceiverServiceIntent, mKeyEventReceiverConnection, 0);
-        } catch (SecurityException e) {
-            Log.e(TAG, e.toString());
-        }
+        // Connect to the different key mapper build types.
+        mKeyEventRelayServiceWrapperRelease =
+                new KeyEventRelayServiceWrapperImpl(
+                        getApplicationContext(),
+                        "io.github.sds100.keymapper",
+                        mKeyEventRelayServiceCallback);
+        mKeyEventRelayServiceWrapperRelease.bind();
+
+        mKeyEventRelayServiceWrapperDebug =
+                new KeyEventRelayServiceWrapperImpl(
+                        getApplicationContext(),
+                        "io.github.sds100.keymapper.debug",
+                        mKeyEventRelayServiceCallback);
+        mKeyEventRelayServiceWrapperDebug.bind();
+
+        mKeyEventRelayServiceWrapperCi =
+                new KeyEventRelayServiceWrapperImpl(
+                        getApplicationContext(),
+                        "io.github.sds100.keymapper.ci",
+                        mKeyEventRelayServiceCallback);
+        mKeyEventRelayServiceWrapperCi.bind();
 
         StatsUtils.onCreate(mSettings.getCurrent(), mRichImm);
     }
@@ -903,7 +912,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
         unregisterReceiver(mKeyMapperBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
-        unbindService(mKeyEventReceiverConnection);
+        mKeyEventRelayServiceWrapperRelease.unbind();
+        mKeyEventRelayServiceWrapperDebug.unbind();
+        mKeyEventRelayServiceWrapperCi.unbind();
         super.onDestroy();
     }
 
@@ -1483,7 +1494,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     /**
      * @param codePoints code points to get coordinates for.
-     * @return x,y coordinates for this keyboard, as a flattened array.
+     * @return x, y coordinates for this keyboard, as a flattened array.
      */
     public int[] getCoordinatesForCurrentKeyboard(final int[] codePoints) {
         final Keyboard keyboard = mKeyboardSwitcher.getKeyboard();
@@ -1528,7 +1539,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // for RTL languages we want to invert pointer movement
         if (mRichImm.getCurrentSubtype().isRtlSubtype())
             steps = -steps;
-            
+
         mInputLogic.finishInput();
         if (steps < 0) {
             int availableCharacters = mInputLogic.mConnection.getTextBeforeCursor(64, 0).length();
@@ -1687,6 +1698,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
      * IME for the full gesture, possibly updating the TextView to reflect the first suggestion.
      * <p>
      * This method must be run on the UI Thread.
+     *
      * @param suggestedWords suggested words by the IME for the full gesture.
      */
     public void onTailBatchInputResultShown(final SuggestedWords suggestedWords) {
@@ -1836,6 +1848,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
      * After an input transaction has been executed, some state must be updated. This includes
      * the shift state of the keyboard and suggestions. This method looks at the finished
      * inputTransaction to find out what is necessary and updates the state accordingly.
+     *
      * @param inputTransaction The transaction that has been executed.
      */
     private void updateStateAfterInputTransaction(final InputTransaction inputTransaction) {
@@ -1923,13 +1936,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 
-        if (mKeyEventReceiverBinder != null) {
-            try {
-                if (mKeyEventReceiverBinder.onKeyEvent(keyEvent)) {
-                    return true;
-                }
-            } catch (RemoteException e) {
-
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+                return true;
             }
         }
 
@@ -1959,13 +1968,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
-        if (mKeyEventReceiverBinder != null) {
-            try {
-                if (mKeyEventReceiverBinder.onKeyEvent(keyEvent)) {
-                    return true;
-                }
-            } catch (RemoteException e) {
-
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+                return true;
             }
         }
 
@@ -2024,7 +2029,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         final CharSequence title = getString(R.string.english_ime_input_options);
         // TODO: Should use new string "Select active input modes".
         final CharSequence languageSelectionTitle = getString(R.string.language_selection_title);
-        final CharSequence[] items = new CharSequence[] {
+        final CharSequence[] items = new CharSequence[]{
                 languageSelectionTitle,
                 getString(ApplicationUtils.getActivityTitleResId(this, SettingsActivity.class))
         };
