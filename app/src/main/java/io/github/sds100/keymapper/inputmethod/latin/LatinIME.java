@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-import io.github.sds100.keymapper.IKeyEventRelayServiceCallback;
+import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback;
 import io.github.sds100.keymapper.inputmethod.accessibility.AccessibilityUtils;
 import io.github.sds100.keymapper.inputmethod.annotations.UsedForTesting;
 import io.github.sds100.keymapper.inputmethod.compat.EditorInfoCompatUtils;
@@ -219,7 +219,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     final RestartAfterDeviceUnlockReceiver mRestartAfterDeviceUnlockReceiver = new RestartAfterDeviceUnlockReceiver();
 
-    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapper;
+    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperRelease;
+    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperDebug;
+    private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperCi;
     private IKeyEventRelayServiceCallback mKeyEventRelayServiceCallback = new IKeyEventRelayServiceCallback.Stub() {
         @Override
         public boolean onKeyEvent(KeyEvent event, String sourcePackageName) {
@@ -776,10 +778,27 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
         registerReceiver(mKeyMapperBroadcastReceiver, keyMapperIntentFilter);
 
-        mKeyEventRelayServiceWrapper =
-                new KeyEventRelayServiceWrapperImpl(getApplicationContext(), mKeyEventRelayServiceCallback);
+        // Connect to the different key mapper build types.
+        mKeyEventRelayServiceWrapperRelease =
+                new KeyEventRelayServiceWrapperImpl(
+                        getApplicationContext(),
+                        "io.github.sds100.keymapper",
+                        mKeyEventRelayServiceCallback);
+        mKeyEventRelayServiceWrapperRelease.bind();
 
-        mKeyEventRelayServiceWrapper.bind();
+        mKeyEventRelayServiceWrapperDebug =
+                new KeyEventRelayServiceWrapperImpl(
+                        getApplicationContext(),
+                        "io.github.sds100.keymapper.debug",
+                        mKeyEventRelayServiceCallback);
+        mKeyEventRelayServiceWrapperDebug.bind();
+
+        mKeyEventRelayServiceWrapperCi =
+                new KeyEventRelayServiceWrapperImpl(
+                        getApplicationContext(),
+                        "io.github.sds100.keymapper.ci",
+                        mKeyEventRelayServiceCallback);
+        mKeyEventRelayServiceWrapperCi.bind();
 
         StatsUtils.onCreate(mSettings.getCurrent(), mRichImm);
     }
@@ -893,7 +912,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
         unregisterReceiver(mKeyMapperBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
-        mKeyEventRelayServiceWrapper.unbind();
+        mKeyEventRelayServiceWrapperRelease.unbind();
+        mKeyEventRelayServiceWrapperDebug.unbind();
+        mKeyEventRelayServiceWrapperCi.unbind();
         super.onDestroy();
     }
 
@@ -1915,8 +1936,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 
-        if (mKeyEventRelayServiceWrapper != null) {
-            if (mKeyEventRelayServiceWrapper.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
                 return true;
             }
         }
@@ -1947,8 +1968,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
-        if (mKeyEventRelayServiceWrapper != null) {
-            if (mKeyEventRelayServiceWrapper.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
                 return true;
             }
         }

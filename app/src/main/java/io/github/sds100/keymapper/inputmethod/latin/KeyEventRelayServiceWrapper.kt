@@ -8,16 +8,21 @@ import android.os.DeadObjectException
 import android.os.IBinder
 import android.util.Log
 import android.view.KeyEvent
-import io.github.sds100.keymapper.IKeyEventRelayService
-import io.github.sds100.keymapper.IKeyEventRelayServiceCallback
+import io.github.sds100.keymapper.api.IKeyEventRelayService
+import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback
 
 /**
  * This handles connecting to the relay service and exposes an interface
  * so other parts of the app can get a reference to the service even when it isn't
  * bound yet.
+ *
+ * @param servicePackageName This is the package name of the key mapper app to connect to to listen
+ * to key events. This is needed because the .debug and .ci key mapper builds are commonly
+ * used.
  */
 class KeyEventRelayServiceWrapperImpl(
     context: Context,
+    private val servicePackageName: String,
     private val callback: IKeyEventRelayServiceCallback,
 ) : KeyEventRelayServiceWrapper {
     private val ctx: Context = context.applicationContext
@@ -25,7 +30,7 @@ class KeyEventRelayServiceWrapperImpl(
     private val keyEventRelayServiceLock: Any = Any()
     private var keyEventRelayService: IKeyEventRelayService? = null
 
-    private val keyEventReceiverConnection: ServiceConnection =
+    private val serviceConnection: ServiceConnection =
         object : ServiceConnection {
             override fun onServiceConnected(
                 name: ComponentName?,
@@ -66,13 +71,11 @@ class KeyEventRelayServiceWrapperImpl(
 
     fun bind() {
         try {
-            val keyEventReceiverComponent =
-                ComponentName("io.github.sds100.keymapper.debug", "io.github.sds100.keymapper.api.KeyEventRelayService")
-            val keyEventReceiverServiceIntent = Intent()
-            keyEventReceiverServiceIntent.setComponent(keyEventReceiverComponent)
-            ctx.bindService(keyEventReceiverServiceIntent, keyEventReceiverConnection, 0)
-
-            Log.e(LatinIME.TAG, "Bind to service")
+            val relayServiceIntent = Intent()
+            val component =
+                ComponentName(servicePackageName, "io.github.sds100.keymapper.api.KeyEventRelayService")
+            relayServiceIntent.setComponent(component)
+            ctx.bindService(relayServiceIntent, serviceConnection, 0)
         } catch (e: SecurityException) {
             Log.e(LatinIME.TAG, e.toString())
         }
@@ -80,7 +83,7 @@ class KeyEventRelayServiceWrapperImpl(
 
     fun unbind() {
         try {
-            ctx.unbindService(keyEventReceiverConnection)
+            ctx.unbindService(serviceConnection)
         } catch (e: DeadObjectException) {
             // do nothing
         }

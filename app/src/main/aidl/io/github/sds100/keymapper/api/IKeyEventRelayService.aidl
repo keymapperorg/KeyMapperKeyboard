@@ -1,7 +1,7 @@
-package io.github.sds100.keymapper;
+package io.github.sds100.keymapper.api;
 
 import android.view.KeyEvent;
-import io.github.sds100.keymapper.IKeyEventRelayServiceCallback;
+import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback;
 
 interface IKeyEventRelayService {
     /**
