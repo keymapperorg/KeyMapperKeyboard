@@ -45,8 +45,12 @@ class KeyEventRelayServiceWrapperImpl(
 
             override fun onServiceDisconnected(name: ComponentName?) {
                 synchronized(keyEventRelayServiceLock) {
-                    keyEventRelayService?.unregisterCallback()
-                    keyEventRelayService = null
+                    try {
+                        keyEventRelayService?.unregisterCallback()
+                    } catch (_: DeadObjectException) {
+                    } finally {
+                        keyEventRelayService = null
+                    }
                 }
             }
         }
