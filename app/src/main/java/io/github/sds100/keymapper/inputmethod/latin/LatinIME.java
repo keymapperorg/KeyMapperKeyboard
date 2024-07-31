@@ -1936,8 +1936,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 
-        if (mKeyEventRelayServiceWrapperDebug != null) {
-            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+        if (mKeyEventRelayServiceWrapperRelease != null) {
+            if (mKeyEventRelayServiceWrapperRelease.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
                 return true;
             }
         }
@@ -1968,8 +1968,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
-        if (mKeyEventRelayServiceWrapperDebug != null) {
-            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+        if (mKeyEventRelayServiceWrapperRelease != null) {
+            if (mKeyEventRelayServiceWrapperRelease.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
                 return true;
             }
         }

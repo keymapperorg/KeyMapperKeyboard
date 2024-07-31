@@ -6,10 +6,12 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.DeadObjectException
 import android.os.IBinder
+import android.os.RemoteException
 import android.util.Log
 import android.view.KeyEvent
 import io.github.sds100.keymapper.api.IKeyEventRelayService
 import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback
+
 
 /**
  * This handles connecting to the relay service and exposes an interface
@@ -38,7 +40,7 @@ class KeyEventRelayServiceWrapperImpl(
             ) {
                 synchronized(keyEventRelayServiceLock) {
                     keyEventRelayService = IKeyEventRelayService.Stub.asInterface(service)
-                    Log.e(LatinIME.TAG, "Register callback")
+                    Log.d(LatinIME.TAG, "Register with key event relay service")
                     keyEventRelayService?.registerCallback(callback)
                 }
             }
@@ -46,8 +48,9 @@ class KeyEventRelayServiceWrapperImpl(
             override fun onServiceDisconnected(name: ComponentName?) {
                 synchronized(keyEventRelayServiceLock) {
                     try {
+                        Log.d(LatinIME.TAG, "Unregister with key event relay service")
                         keyEventRelayService?.unregisterCallback()
-                    } catch (_: DeadObjectException) {
+                    } catch (_: RemoteException) {
                     } finally {
                         keyEventRelayService = null
                     }
@@ -79,7 +82,11 @@ class KeyEventRelayServiceWrapperImpl(
             val component =
                 ComponentName(servicePackageName, "io.github.sds100.keymapper.api.KeyEventRelayService")
             relayServiceIntent.setComponent(component)
-            ctx.bindService(relayServiceIntent, serviceConnection, 0)
+            val isSuccess = ctx.bindService(relayServiceIntent, serviceConnection, 0)
+
+            if (!isSuccess) {
+                ctx.unbindService(serviceConnection)
+            }
         } catch (e: SecurityException) {
             Log.e(LatinIME.TAG, e.toString())
         }
