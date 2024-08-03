@@ -27,9 +27,15 @@ class KeyEventRelayServiceWrapperImpl(
     private val servicePackageName: String,
     private val callback: IKeyEventRelayServiceCallback,
 ) : KeyEventRelayServiceWrapper {
+
+    companion object {
+        const val ACTION_BIND_RELAY_SERVICE = "io.github.sds100.keymapper.ACTION_BIND_RELAY_SERVICE"
+    }
+
     private val ctx: Context = context.applicationContext
 
     private val keyEventRelayServiceLock: Any = Any()
+    private var isBound = false
     private var keyEventRelayService: IKeyEventRelayService? = null
 
     private val serviceConnection: ServiceConnection =
@@ -84,8 +90,11 @@ class KeyEventRelayServiceWrapperImpl(
             relayServiceIntent.setComponent(component)
             val isSuccess = ctx.bindService(relayServiceIntent, serviceConnection, 0)
 
-            if (!isSuccess) {
+            if (isSuccess) {
+                isBound = true
+            } else {
                 ctx.unbindService(serviceConnection)
+                isBound = false
             }
         } catch (e: SecurityException) {
             Log.e(LatinIME.TAG, e.toString())
@@ -93,10 +102,11 @@ class KeyEventRelayServiceWrapperImpl(
     }
 
     fun unbind() {
-        try {
+        // Check if it is bound because otherwise
+        // an exception is thrown if you unbind from a service
+        // while there is no registered connection.
+        if (isBound) {
             ctx.unbindService(serviceConnection)
-        } catch (e: DeadObjectException) {
-            // do nothing
         }
     }
 }
