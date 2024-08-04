@@ -1,14 +1,17 @@
 package io.github.sds100.keymapper.inputmethod.latin
 
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.DeadObjectException
 import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
 import android.view.KeyEvent
+import androidx.core.content.ContextCompat
 import io.github.sds100.keymapper.api.IKeyEventRelayService
 import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback
 
@@ -29,7 +32,10 @@ class KeyEventRelayServiceWrapperImpl(
 ) : KeyEventRelayServiceWrapper {
 
     companion object {
-        const val ACTION_BIND_RELAY_SERVICE = "io.github.sds100.keymapper.ACTION_BIND_RELAY_SERVICE"
+        /**
+         * This is used to listen to when the key event relay service is restarted in Key Mapper.
+         */
+        const val ACTION_REBIND_RELAY_SERVICE = "io.github.sds100.keymapper.ACTION_REBIND_RELAY_SERVICE"
     }
 
     private val ctx: Context = context.applicationContext
@@ -46,23 +52,44 @@ class KeyEventRelayServiceWrapperImpl(
             ) {
                 synchronized(keyEventRelayServiceLock) {
                     keyEventRelayService = IKeyEventRelayService.Stub.asInterface(service)
-                    Log.d(LatinIME.TAG, "Register with key event relay service")
+                    Log.d(LatinIME.TAG, "Key event relay service started: $servicePackageName")
                     keyEventRelayService?.registerCallback(callback)
                 }
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
                 synchronized(keyEventRelayServiceLock) {
-                    try {
-                        Log.d(LatinIME.TAG, "Unregister with key event relay service")
-                        keyEventRelayService?.unregisterCallback()
-                    } catch (_: RemoteException) {
-                    } finally {
-                        keyEventRelayService = null
-                    }
+                    // Do not unregister the callback in onServiceDisconnected
+                    // because the connection is already broken at that point and it
+                    // will fail.
+
+                    Log.d(LatinIME.TAG, "Key event relay service stopped: $servicePackageName")
+
+                    keyEventRelayService = null
                 }
             }
         }
+
+    private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            context ?: return
+            intent ?: return
+
+            when (intent.action) {
+                ACTION_REBIND_RELAY_SERVICE -> {
+                    bind()
+                }
+            }
+        }
+    }
+
+    init {
+        val intentFilter = IntentFilter().apply {
+            addAction(ACTION_REBIND_RELAY_SERVICE)
+        }
+
+        ContextCompat.registerReceiver(ctx, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
+    }
 
     override fun sendKeyEvent(
         event: KeyEvent?,
@@ -106,6 +133,15 @@ class KeyEventRelayServiceWrapperImpl(
         // an exception is thrown if you unbind from a service
         // while there is no registered connection.
         if (isBound) {
+            // Unregister the callback if this input method is unbinding
+            // from the relay service. This should not happen in onServiceDisconnected
+            // because the connection is already broken at that point and it
+            // will fail.
+            try {
+                keyEventRelayService?.unregisterCallback()
+            } catch (e: RemoteException) {
+                // do nothing
+            }
             ctx.unbindService(serviceConnection)
         }
     }

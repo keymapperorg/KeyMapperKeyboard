@@ -58,6 +58,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import androidx.core.content.ContextCompat;
 import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback;
 import io.github.sds100.keymapper.inputmethod.accessibility.AccessibilityUtils;
 import io.github.sds100.keymapper.inputmethod.annotations.UsedForTesting;
@@ -744,31 +745,31 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // Register to receive ringer mode change.
         final IntentFilter filter = new IntentFilter();
         filter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
-        registerReceiver(mRingerModeChangeReceiver, filter);
+        ContextCompat.registerReceiver(this, mRingerModeChangeReceiver, filter, ContextCompat.RECEIVER_EXPORTED);
 
         // Register to receive installation and removal of a dictionary pack.
         final IntentFilter packageFilter = new IntentFilter();
         packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
         packageFilter.addDataScheme(SCHEME_PACKAGE);
-        registerReceiver(mDictionaryPackInstallReceiver, packageFilter);
+        ContextCompat.registerReceiver(this, mDictionaryPackInstallReceiver, packageFilter, ContextCompat.RECEIVER_EXPORTED);
 
         final IntentFilter newDictFilter = new IntentFilter();
         newDictFilter.addAction(DictionaryPackConstants.NEW_DICTIONARY_INTENT_ACTION);
-        registerReceiver(mDictionaryPackInstallReceiver, newDictFilter);
+        ContextCompat.registerReceiver(this, mDictionaryPackInstallReceiver, newDictFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         final IntentFilter dictDumpFilter = new IntentFilter();
         dictDumpFilter.addAction(DictionaryDumpBroadcastReceiver.DICTIONARY_DUMP_INTENT_ACTION);
-        registerReceiver(mDictionaryDumpBroadcastReceiver, dictDumpFilter);
+        ContextCompat.registerReceiver(this, mDictionaryDumpBroadcastReceiver, dictDumpFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         final IntentFilter hideSoftInputFilter = new IntentFilter();
         hideSoftInputFilter.addAction(ACTION_HIDE_SOFT_INPUT);
-        registerReceiver(mHideSoftInputReceiver, hideSoftInputFilter, PERMISSION_HIDE_SOFT_INPUT,
-                null /* scheduler */);
+        ContextCompat.registerReceiver(this, mHideSoftInputReceiver, hideSoftInputFilter, PERMISSION_HIDE_SOFT_INPUT,
+                null /* scheduler */, ContextCompat.RECEIVER_EXPORTED);
 
         final IntentFilter restartAfterUnlockFilter = new IntentFilter();
         restartAfterUnlockFilter.addAction(Intent.ACTION_USER_UNLOCKED);
-        registerReceiver(mRestartAfterDeviceUnlockReceiver, restartAfterUnlockFilter);
+        ContextCompat.registerReceiver(this, mRestartAfterDeviceUnlockReceiver, restartAfterUnlockFilter, ContextCompat.RECEIVER_EXPORTED);
 
         final IntentFilter keyMapperIntentFilter = new IntentFilter();
         keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_DOWN_UP);
@@ -776,7 +777,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_INPUT_UP);
         keyMapperIntentFilter.addAction(KEY_MAPPER_INPUT_METHOD_ACTION_TEXT);
 
-        registerReceiver(mKeyMapperBroadcastReceiver, keyMapperIntentFilter);
+        ContextCompat.registerReceiver(this, mKeyMapperBroadcastReceiver, keyMapperIntentFilter, ContextCompat.RECEIVER_EXPORTED);
 
         // Connect to the different key mapper build types.
         mKeyEventRelayServiceWrapperRelease =
