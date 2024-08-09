@@ -1,0 +1,1 @@
+Use a different way to receive key events from Key Mapper to work around the 1 second delay introduced by Android 14. This fix also requires Key Mapper 2.6.1 or newer.
