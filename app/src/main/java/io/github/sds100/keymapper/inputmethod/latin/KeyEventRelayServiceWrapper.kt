@@ -89,6 +89,7 @@ class KeyEventRelayServiceWrapperImpl(
         }
 
         ContextCompat.registerReceiver(ctx, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
+        bind()
     }
 
     fun onDestroy() {
