@@ -83,12 +83,17 @@ class KeyEventRelayServiceWrapperImpl(
         }
     }
 
-    init {
+    fun onCreate() {
         val intentFilter = IntentFilter().apply {
             addAction(ACTION_REBIND_RELAY_SERVICE)
         }
 
         ContextCompat.registerReceiver(ctx, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
+    }
+
+    fun onDestroy() {
+        ctx.unregisterReceiver(broadcastReceiver)
+        unbind()
     }
 
     override fun sendKeyEvent(
@@ -109,7 +114,12 @@ class KeyEventRelayServiceWrapperImpl(
         }
     }
 
-    fun bind() {
+    private fun bind() {
+        Log.d(LatinIME.TAG, "Bind $servicePackageName")
+        if (isBound) {
+            return
+        }
+
         try {
             val relayServiceIntent = Intent()
             val component =
@@ -128,7 +138,8 @@ class KeyEventRelayServiceWrapperImpl(
         }
     }
 
-    fun unbind() {
+    private fun unbind() {
+        Log.d(LatinIME.TAG, "Unbind $servicePackageName")
         // Check if it is bound because otherwise
         // an exception is thrown if you unbind from a service
         // while there is no registered connection.
@@ -145,6 +156,7 @@ class KeyEventRelayServiceWrapperImpl(
             ctx.unbindService(serviceConnection)
         }
     }
+
 }
 
 interface KeyEventRelayServiceWrapper {

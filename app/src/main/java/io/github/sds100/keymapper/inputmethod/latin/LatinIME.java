@@ -785,21 +785,21 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                         getApplicationContext(),
                         "io.github.sds100.keymapper",
                         mKeyEventRelayServiceCallback);
-        mKeyEventRelayServiceWrapperRelease.bind();
+        mKeyEventRelayServiceWrapperRelease.onCreate();
 
         mKeyEventRelayServiceWrapperDebug =
                 new KeyEventRelayServiceWrapperImpl(
                         getApplicationContext(),
                         "io.github.sds100.keymapper.debug",
                         mKeyEventRelayServiceCallback);
-        mKeyEventRelayServiceWrapperDebug.bind();
+        mKeyEventRelayServiceWrapperDebug.onCreate();
 
         mKeyEventRelayServiceWrapperCi =
                 new KeyEventRelayServiceWrapperImpl(
                         getApplicationContext(),
                         "io.github.sds100.keymapper.ci",
                         mKeyEventRelayServiceCallback);
-        mKeyEventRelayServiceWrapperCi.bind();
+        mKeyEventRelayServiceWrapperCi.onCreate();
 
         StatsUtils.onCreate(mSettings.getCurrent(), mRichImm);
     }
@@ -913,9 +913,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
         unregisterReceiver(mKeyMapperBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
-        mKeyEventRelayServiceWrapperRelease.unbind();
-        mKeyEventRelayServiceWrapperDebug.unbind();
-        mKeyEventRelayServiceWrapperCi.unbind();
+        mKeyEventRelayServiceWrapperRelease.onDestroy();
+        mKeyEventRelayServiceWrapperRelease = null;
+        mKeyEventRelayServiceWrapperDebug.onDestroy();
+        mKeyEventRelayServiceWrapperDebug = null;
+        mKeyEventRelayServiceWrapperCi.onDestroy();
+        mKeyEventRelayServiceWrapperCi = null;
         super.onDestroy();
     }
 
