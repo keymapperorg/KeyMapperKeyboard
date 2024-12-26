@@ -41,7 +41,6 @@ class KeyEventRelayServiceWrapperImpl(
     private val ctx: Context = context.applicationContext
 
     private val keyEventRelayServiceLock: Any = Any()
-    private var isBound = false
     private var keyEventRelayService: IKeyEventRelayService? = null
 
     private val serviceConnection: ServiceConnection =
@@ -117,10 +116,6 @@ class KeyEventRelayServiceWrapperImpl(
 
     private fun bind() {
         Log.d(LatinIME.TAG, "Bind $servicePackageName")
-        if (isBound) {
-            return
-        }
-
         try {
             val relayServiceIntent = Intent()
             val component =
@@ -128,11 +123,8 @@ class KeyEventRelayServiceWrapperImpl(
             relayServiceIntent.setComponent(component)
             val isSuccess = ctx.bindService(relayServiceIntent, serviceConnection, 0)
 
-            if (isSuccess) {
-                isBound = true
-            } else {
+            if (!isSuccess) {
                 ctx.unbindService(serviceConnection)
-                isBound = false
             }
         } catch (e: SecurityException) {
             Log.e(LatinIME.TAG, e.toString())
@@ -141,20 +133,18 @@ class KeyEventRelayServiceWrapperImpl(
 
     private fun unbind() {
         Log.d(LatinIME.TAG, "Unbind $servicePackageName")
-        // Check if it is bound because otherwise
-        // an exception is thrown if you unbind from a service
-        // while there is no registered connection.
-        if (isBound) {
-            // Unregister the callback if this input method is unbinding
-            // from the relay service. This should not happen in onServiceDisconnected
-            // because the connection is already broken at that point and it
-            // will fail.
-            try {
-                keyEventRelayService?.unregisterCallback()
-            } catch (e: RemoteException) {
-                // do nothing
-            }
+        // Unregister the callback if this input method is unbinding
+        // from the relay service. This should not happen in onServiceDisconnected
+        // because the connection is already broken at that point and it
+        // will fail.
+        try {
+            keyEventRelayService?.unregisterCallback()
             ctx.unbindService(serviceConnection)
+        } catch (e: RemoteException) {
+            // do nothing
+        } catch (e: IllegalArgumentException) {
+            // an exception is thrown if you unbind from a service
+            // while there is no registered connection.
         }
     }
 
