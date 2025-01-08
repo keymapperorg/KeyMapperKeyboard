@@ -40,6 +40,7 @@ import android.util.Printer;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
@@ -784,6 +785,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 new KeyEventRelayServiceWrapperImpl(
                         getApplicationContext(),
                         "io.github.sds100.keymapper",
+                        "input_method",
                         mKeyEventRelayServiceCallback);
         mKeyEventRelayServiceWrapperRelease.onCreate();
 
@@ -791,6 +793,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 new KeyEventRelayServiceWrapperImpl(
                         getApplicationContext(),
                         "io.github.sds100.keymapper.debug",
+                        "input_method",
                         mKeyEventRelayServiceCallback);
         mKeyEventRelayServiceWrapperDebug.onCreate();
 
@@ -798,6 +801,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 new KeyEventRelayServiceWrapperImpl(
                         getApplicationContext(),
                         "io.github.sds100.keymapper.ci",
+                        "input_method",
                         mKeyEventRelayServiceCallback);
         mKeyEventRelayServiceWrapperCi.onCreate();
 
@@ -1941,7 +1945,19 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 
         if (mKeyEventRelayServiceWrapperRelease != null) {
-            if (mKeyEventRelayServiceWrapperRelease.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+            if (mKeyEventRelayServiceWrapperRelease.sendKeyEvent(keyEvent, "io.github.sds100.keymapper", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        if (mKeyEventRelayServiceWrapperCi != null) {
+            if (mKeyEventRelayServiceWrapperCi.sendKeyEvent(keyEvent, "io.github.sds100.keymapper.ci", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper.debug", "accessibility_service")) {
                 return true;
             }
         }
@@ -1973,7 +1989,19 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
         if (mKeyEventRelayServiceWrapperRelease != null) {
-            if (mKeyEventRelayServiceWrapperRelease.sendKeyEvent(keyEvent, "io.github.sds100.keymapper")) {
+            if (mKeyEventRelayServiceWrapperRelease.sendKeyEvent(keyEvent, "io.github.sds100.keymapper", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        if (mKeyEventRelayServiceWrapperCi != null) {
+            if (mKeyEventRelayServiceWrapperCi.sendKeyEvent(keyEvent, "io.github.sds100.keymapper.ci", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendKeyEvent(keyEvent, "io.github.sds100.keymapper.debug", "accessibility_service")) {
                 return true;
             }
         }
@@ -1992,6 +2020,33 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         }
 
         return super.onKeyUp(keyCode, keyEvent);
+    }
+
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        if (event == null) {
+            return super.onGenericMotionEvent(null);
+        }
+
+        if (mKeyEventRelayServiceWrapperRelease != null) {
+            if (mKeyEventRelayServiceWrapperRelease.sendMotionEvent(event, "io.github.sds100.keymapper", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        if (mKeyEventRelayServiceWrapperCi != null) {
+            if (mKeyEventRelayServiceWrapperCi.sendMotionEvent(event, "io.github.sds100.keymapper.ci", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        if (mKeyEventRelayServiceWrapperDebug != null) {
+            if (mKeyEventRelayServiceWrapperDebug.sendMotionEvent(event, "io.github.sds100.keymapper.debug", "accessibility_service")) {
+                return true;
+            }
+        }
+
+        return super.onGenericMotionEvent(event);
     }
 
     // onKeyDown and onKeyUp are the main events we are interested in. There are two more events

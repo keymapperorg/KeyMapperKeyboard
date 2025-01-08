@@ -1,5 +1,6 @@
 package io.github.sds100.keymapper.inputmethod.latin
 
+
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -11,23 +12,20 @@ import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import androidx.core.content.ContextCompat
 import io.github.sds100.keymapper.api.IKeyEventRelayService
 import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback
 
-
 /**
  * This handles connecting to the relay service and exposes an interface
  * so other parts of the app can get a reference to the service even when it isn't
- * bound yet.
- *
- * @param servicePackageName This is the package name of the key mapper app to connect to to listen
- * to key events. This is needed because the .debug and .ci key mapper builds are commonly
- * used.
+ * bound yet. This class is copied to the Key Mapper GUI Keyboard app as well.
  */
 class KeyEventRelayServiceWrapperImpl(
     context: Context,
     private val servicePackageName: String,
+    private val id: String,
     private val callback: IKeyEventRelayServiceCallback,
 ) : KeyEventRelayServiceWrapper {
 
@@ -51,8 +49,7 @@ class KeyEventRelayServiceWrapperImpl(
             ) {
                 synchronized(keyEventRelayServiceLock) {
                     keyEventRelayService = IKeyEventRelayService.Stub.asInterface(service)
-                    Log.d(LatinIME.TAG, "Key event relay service started: $servicePackageName")
-                    keyEventRelayService?.registerCallback(callback)
+                    keyEventRelayService?.registerCallback(callback, id)
                 }
             }
 
@@ -97,8 +94,9 @@ class KeyEventRelayServiceWrapperImpl(
     }
 
     override fun sendKeyEvent(
-        event: KeyEvent?,
-        targetPackageName: String?,
+        event: KeyEvent,
+        targetPackageName: String,
+        callbackId: String,
     ): Boolean {
         synchronized(keyEventRelayServiceLock) {
             if (keyEventRelayService == null) {
@@ -106,7 +104,26 @@ class KeyEventRelayServiceWrapperImpl(
             }
 
             try {
-                return keyEventRelayService!!.sendKeyEvent(event, targetPackageName)
+                return keyEventRelayService!!.sendKeyEvent(event, targetPackageName, callbackId)
+            } catch (e: DeadObjectException) {
+                keyEventRelayService = null
+                return false
+            }
+        }
+    }
+
+    override fun sendMotionEvent(
+        event: MotionEvent,
+        targetPackageName: String,
+        callbackId: String,
+    ): Boolean {
+        synchronized(keyEventRelayServiceLock) {
+            if (keyEventRelayService == null) {
+                return false
+            }
+
+            try {
+                return keyEventRelayService!!.sendMotionEvent(event, targetPackageName, callbackId)
             } catch (e: DeadObjectException) {
                 keyEventRelayService = null
                 return false
@@ -141,7 +158,7 @@ class KeyEventRelayServiceWrapperImpl(
         // because the connection is already broken at that point and it
         // will fail.
         try {
-            keyEventRelayService?.unregisterCallback(callback)
+            keyEventRelayService?.unregisterCallback(id)
             ctx.unbindService(serviceConnection)
         } catch (e: RemoteException) {
             // do nothing
@@ -154,8 +171,6 @@ class KeyEventRelayServiceWrapperImpl(
 }
 
 interface KeyEventRelayServiceWrapper {
-    fun sendKeyEvent(
-        event: KeyEvent?,
-        targetPackageName: String?,
-    ): Boolean
+    fun sendKeyEvent(event: KeyEvent, targetPackageName: String, callbackId: String): Boolean
+    fun sendMotionEvent(event: MotionEvent, targetPackageName: String, callbackId: String): Boolean
 }
