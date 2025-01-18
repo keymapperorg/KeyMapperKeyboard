@@ -226,7 +226,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     private KeyEventRelayServiceWrapperImpl mKeyEventRelayServiceWrapperCi;
     private final IKeyEventRelayServiceCallback mKeyEventRelayServiceCallback = new IKeyEventRelayServiceCallback.Stub() {
         @Override
-        public boolean onKeyEvent(KeyEvent event, String sourcePackageName) {
+        public boolean onKeyEvent(KeyEvent event) {
             InputConnection ic = getCurrentInputConnection();
 
             if (ic == null) {
