@@ -1,6 +1,5 @@
 package io.github.sds100.keymapper.inputmethod.latin
 
-
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -28,7 +27,6 @@ class KeyEventRelayServiceWrapperImpl(
     private val id: String,
     private val callback: IKeyEventRelayServiceCallback,
 ) : KeyEventRelayServiceWrapper {
-
     companion object {
         /**
          * This is used to listen to when the key event relay service is restarted in Key Mapper.
@@ -66,23 +64,28 @@ class KeyEventRelayServiceWrapperImpl(
             }
         }
 
-    private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            context ?: return
-            intent ?: return
+    private val broadcastReceiver: BroadcastReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(
+                context: Context?,
+                intent: Intent?,
+            ) {
+                context ?: return
+                intent ?: return
 
-            when (intent.action) {
-                ACTION_REBIND_RELAY_SERVICE -> {
-                    bind()
+                when (intent.action) {
+                    ACTION_REBIND_RELAY_SERVICE -> {
+                        bind()
+                    }
                 }
             }
         }
-    }
 
     fun onCreate() {
-        val intentFilter = IntentFilter().apply {
-            addAction(ACTION_REBIND_RELAY_SERVICE)
-        }
+        val intentFilter =
+            IntentFilter().apply {
+                addAction(ACTION_REBIND_RELAY_SERVICE)
+            }
 
         ContextCompat.registerReceiver(ctx, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
         bind()
@@ -128,7 +131,6 @@ class KeyEventRelayServiceWrapperImpl(
     }
 
     private fun bind() {
-        Log.d(LatinIME.TAG, "Bind $servicePackageName")
         try {
             val relayServiceIntent = Intent()
             val component =
@@ -136,7 +138,10 @@ class KeyEventRelayServiceWrapperImpl(
             relayServiceIntent.setComponent(component)
             val isSuccess = ctx.bindService(relayServiceIntent, serviceConnection, 0)
 
-            if (!isSuccess) {
+            if (isSuccess) {
+                Log.d(LatinIME.TAG, "Bind $servicePackageName")
+            } else {
+                Log.d(LatinIME.TAG, "Bind unsuccessful $servicePackageName")
                 ctx.unbindService(serviceConnection)
             }
         } catch (e: SecurityException) {
@@ -163,10 +168,18 @@ class KeyEventRelayServiceWrapperImpl(
             // while there is no registered connection.
         }
     }
-
 }
 
 interface KeyEventRelayServiceWrapper {
-    fun sendKeyEvent(event: KeyEvent, targetPackageName: String, callbackId: String): Boolean
-    fun sendMotionEvent(event: MotionEvent, targetPackageName: String, callbackId: String): Boolean
+    fun sendKeyEvent(
+        event: KeyEvent,
+        targetPackageName: String,
+        callbackId: String,
+    ): Boolean
+
+    fun sendMotionEvent(
+        event: MotionEvent,
+        targetPackageName: String,
+        callbackId: String,
+    ): Boolean
 }
