@@ -1,4 +1,4 @@
-name: Testing - build and release app
+name: Testing - build app
 
 on:
   push:
@@ -11,11 +11,11 @@ concurrency:
 
 jobs:
   apk:
-    name: Generate and upload APK to Discord
+    name: Generate APK
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: actions/cache@v3
         with:
@@ -48,21 +48,7 @@ jobs:
         run: echo "APK_NAME=$(basename app/build/outputs/apk/ci/*.apk .apk)" >> $GITHUB_ENV
 
       - name: Upload APK
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APK_NAME }}
           path: app/build/outputs/apk/ci/${{ env.APK_NAME }}.apk
-
-      - name: Upload to Discord
-        uses: sinshutu/upload-to-discord@v2.0.0
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: app/build/outputs/apk/ci/${{ env.APK_NAME }}.apk
-
-      - name: Report build status to Discord
-        uses: sarisia/actions-status-discord@v1
-        if: failure()
-        with:
-          title: "Build Key Mapper GUI Keyboard apk"
-          webhook: ${{ secrets.DISCORD_BUILD_STATUS_WEBHOOK }}
