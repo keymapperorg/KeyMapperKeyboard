@@ -2046,7 +2046,11 @@ public final class InputLogic {
         if (settingsValues.shouldInsertSpacesAutomatically()
                 && settingsValues.mSpacingAndPunctuations.mCurrentLanguageHasSpaces
                 && !mConnection.textBeforeCursorLooksLikeURL()) {
-            sendKeyCodePoint(settingsValues, Constants.CODE_SPACE);
+            // aex sonicbluesky edit: attempt to disable buggy and terrible autospace "feature"
+            // because injects spaces even with correction off and autospace off.
+            // this function does NOT check options as the comment above this function states
+            // see: openboard issue #883, keymapper by sds100 issue #14
+            // sendKeyCodePoint(settingsValues, Constants.CODE_SPACE);
         }
     }
 
