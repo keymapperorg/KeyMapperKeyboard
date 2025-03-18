@@ -34,7 +34,6 @@ android {
         }
     }
 
-
     externalNativeBuild {
         ndkBuild {
             path 'src/main/jni/Android.mk'
@@ -45,9 +44,6 @@ android {
         aidl true
     }
 
-    lintOptions {
-        abortOnError false
-    }
 
     ndkVersion '21.4.7075529'
 
@@ -62,6 +58,14 @@ android {
 
     androidResources {
         noCompress 'dict'
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging false
+        }
+    }
+    lint {
+        abortOnError false
     }
 }
 
