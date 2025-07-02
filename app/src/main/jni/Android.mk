@@ -92,6 +92,10 @@ LOCAL_SDK_VERSION := 14
 LOCAL_NDK_STL_VARIANT := c++_static
 LOCAL_LDFLAGS += -ldl
 
+LOCAL_LDFLAGS += "-Wl,-z,max-page-size=16384"
+LOCAL_LDFLAGS += "-Wl,-z,common-page-size=16384"
+
+
 include $(BUILD_SHARED_LIBRARY)
 #################### Clean up the tmp vars
 include $(LOCAL_PATH)/CleanupNativeFileList.mk
